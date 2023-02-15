@@ -1,0 +1,16 @@
+runtime: go119
+
+instance_class: F1
+
+automatic_scaling:
+  min_instances: 0
+
+env_variables:
+  GOOGLE_CLOUD_PROJECT: rp-forecast-s-01
+  PUBSUB_VERIFICATION_TOKEN: 12345
+  PUBSUB_TOPIC_FORECAST: FORECAST
+  PUBSUB_TOPIC_SUPPLY: SUPPLY
+
+handlers:
+  - url: /.*
+    script: auto
