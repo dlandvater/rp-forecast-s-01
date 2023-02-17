@@ -1,9 +1,9 @@
 package main
 
-func bucketSalesHistory(skuP *SKU, SalesHistoryRowsP []SalesHistory) ([]float32, []float32, []string) {
+func bucketSalesHistory(skuP *SKU, SalesHistoryRowsP []SalesHistory) ([]float64, []float64, []string) {
 
-	var Sales = make([]float32, 156)
-	var Demand = make([]float32, 156)
+	var Sales = make([]float64, 156)
+	var Demand = make([]float64, 156)
 	var Symbol = make([]string, 156)
 	var WeeklyPastDates = ConfigP.WeeklyPastDates
 
@@ -33,7 +33,7 @@ func bucketSalesHistory(skuP *SKU, SalesHistoryRowsP []SalesHistory) ([]float32,
 
 				//Check for adjusted demand
 				if SalesHistoryRowsP[i].AdjustedQty.Valid {
-					Demand[w] = Demand[w] + float32(SalesHistoryRowsP[i].AdjustedQty.Float64)
+					Demand[w] = Demand[w] + float64(SalesHistoryRowsP[i].AdjustedQty.Float64)
 				} else {
 					//Ignore adjusted quantity
 					Demand[w] = Demand[w] + SalesHistoryRowsP[i].SaleQty

@@ -10,14 +10,14 @@ var nextRowId uint64 = 1000
 
 // Calculate weekly forecasts, accumulate into monthly, quarterly, or half-year forecasts
 // Assumptions and adjustments are applied later. These are only baseline statistical forecasts
-func forecastTimePeriod(ForecastBase []float32, ForecastRows []ForecastBaseline, SkuP *SKU) {
+func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline, SkuP *SKU) {
 	var WeeklyFutureDates = ConfigP.WeeklyFutureDates
 	var baseFcstType string = "B"
 	var days int
 	var weeks int
-	var sold float32 = 0
+	var sold float64 = 0
 	var nextWklyFcst int = 0
-	var fcstRowQty float32 = 0
+	var fcstRowQty float64 = 0
 	var update bool
 	var span int
 	var startDate time.Time
@@ -252,9 +252,9 @@ func skip(WeeklyFutureDates []time.Time, forecastEndDate time.Time) int {
 }
 
 // Accumulate forecasts
-func acculmulate(nextWklyFcst int, weeks int, ForecastBase []float32) (int, float32) {
+func acculmulate(nextWklyFcst int, weeks int, ForecastBase []float64) (int, float64) {
 
-	var accumulator float32
+	var accumulator float64
 
 	var end = nextWklyFcst + weeks
 	if end > 52 {
@@ -268,7 +268,7 @@ func acculmulate(nextWklyFcst int, weeks int, ForecastBase []float32) (int, floa
 }
 
 // Check differences
-func checkDifferences(startDate time.Time, endDate time.Time, days int, fcstRowQty float32, ForecastRow ForecastBaseline) bool {
+func checkDifferences(startDate time.Time, endDate time.Time, days int, fcstRowQty float64, ForecastRow ForecastBaseline) bool {
 
 	var update bool = true //default to update forecast row
 	var daysOk bool = false
@@ -292,7 +292,7 @@ func checkDifferences(startDate time.Time, endDate time.Time, days int, fcstRowQ
 	}
 
 	//Check quantity
-	var difference float32 = fcstRowQty - ForecastRow.Quantity
+	var difference float64 = fcstRowQty - ForecastRow.Quantity
 	if difference < 0 {
 		difference = 0 - difference
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cloud.google.com/go/spanner"
 	"database/sql"
 	"time"
 )
@@ -28,19 +29,19 @@ type SKU struct {
 	ResponsibleDemand      string
 	ResponsibleSupply      string
 	CategoryId             string
-	ProfileId              sql.NullString
-	RouteId                sql.NullString
-	AnnualForecast         float32
-	AnnualForecastOverride sql.NullFloat64
-	Trend                  float32
-	TrendOverride          sql.NullFloat64
-	StartDate              sql.NullTime
-	EndDate                sql.NullTime
-	LastReplenishmentDate  sql.NullTime
-	IsHighlySeasonal       string //empty, S
-	SeasonStartDate        sql.NullTime
-	SeasonEndDate          sql.NullTime
-	Cost                   float32
+	ProfileId              spanner.NullString
+	RouteId                spanner.NullString
+	AnnualForecast         float64
+	AnnualForecastOverride spanner.NullFloat64
+	Trend                  float64
+	TrendOverride          spanner.NullFloat64
+	StartDate              spanner.NullTime
+	EndDate                spanner.NullTime
+	LastReplenishmentDate  spanner.NullTime
+	IsHighlySeasonal       spanner.NullString //empty, S
+	SeasonStartDate        spanner.NullTime
+	SeasonEndDate          spanner.NullTime
+	Cost                   float64
 	inSeason               bool
 }
 
@@ -51,7 +52,7 @@ type SalesHistory struct {
 	LocationId     string
 	PostalCode     sql.NullString
 	StartDate      time.Time
-	SaleQty        float32
+	SaleQty        float64
 	Promotion      sql.NullString
 	AbnormalDemand sql.NullString
 	AdjustedQty    sql.NullFloat64
@@ -72,8 +73,8 @@ type Profile struct {
 	OrgId             string
 	ProfileId         string
 	Responsible       string
-	WeeklyPcnt        []float32
-	ShiftedWeeklyPcnt []float32
+	WeeklyPcnt        []float64
+	ShiftedWeeklyPcnt []float64
 }
 
 type ProfileDatabase struct {
@@ -81,58 +82,58 @@ type ProfileDatabase struct {
 	OrgId        string
 	ProfileId    string
 	Responsible  string
-	WeeklyPcnt1  float32
-	WeeklyPcnt2  float32
-	WeeklyPcnt3  float32
-	WeeklyPcnt4  float32
-	WeeklyPcnt5  float32
-	WeeklyPcnt6  float32
-	WeeklyPcnt7  float32
-	WeeklyPcnt8  float32
-	WeeklyPcnt9  float32
-	WeeklyPcnt10 float32
-	WeeklyPcnt11 float32
-	WeeklyPcnt12 float32
-	WeeklyPcnt13 float32
-	WeeklyPcnt14 float32
-	WeeklyPcnt15 float32
-	WeeklyPcnt16 float32
-	WeeklyPcnt17 float32
-	WeeklyPcnt18 float32
-	WeeklyPcnt19 float32
-	WeeklyPcnt20 float32
-	WeeklyPcnt21 float32
-	WeeklyPcnt22 float32
-	WeeklyPcnt23 float32
-	WeeklyPcnt24 float32
-	WeeklyPcnt25 float32
-	WeeklyPcnt26 float32
-	WeeklyPcnt27 float32
-	WeeklyPcnt28 float32
-	WeeklyPcnt29 float32
-	WeeklyPcnt30 float32
-	WeeklyPcnt31 float32
-	WeeklyPcnt32 float32
-	WeeklyPcnt33 float32
-	WeeklyPcnt34 float32
-	WeeklyPcnt35 float32
-	WeeklyPcnt36 float32
-	WeeklyPcnt37 float32
-	WeeklyPcnt38 float32
-	WeeklyPcnt39 float32
-	WeeklyPcnt40 float32
-	WeeklyPcnt41 float32
-	WeeklyPcnt42 float32
-	WeeklyPcnt43 float32
-	WeeklyPcnt44 float32
-	WeeklyPcnt45 float32
-	WeeklyPcnt46 float32
-	WeeklyPcnt47 float32
-	WeeklyPcnt48 float32
-	WeeklyPcnt49 float32
-	WeeklyPcnt50 float32
-	WeeklyPcnt51 float32
-	WeeklyPcnt52 float32
+	WeeklyPcnt1  float64
+	WeeklyPcnt2  float64
+	WeeklyPcnt3  float64
+	WeeklyPcnt4  float64
+	WeeklyPcnt5  float64
+	WeeklyPcnt6  float64
+	WeeklyPcnt7  float64
+	WeeklyPcnt8  float64
+	WeeklyPcnt9  float64
+	WeeklyPcnt10 float64
+	WeeklyPcnt11 float64
+	WeeklyPcnt12 float64
+	WeeklyPcnt13 float64
+	WeeklyPcnt14 float64
+	WeeklyPcnt15 float64
+	WeeklyPcnt16 float64
+	WeeklyPcnt17 float64
+	WeeklyPcnt18 float64
+	WeeklyPcnt19 float64
+	WeeklyPcnt20 float64
+	WeeklyPcnt21 float64
+	WeeklyPcnt22 float64
+	WeeklyPcnt23 float64
+	WeeklyPcnt24 float64
+	WeeklyPcnt25 float64
+	WeeklyPcnt26 float64
+	WeeklyPcnt27 float64
+	WeeklyPcnt28 float64
+	WeeklyPcnt29 float64
+	WeeklyPcnt30 float64
+	WeeklyPcnt31 float64
+	WeeklyPcnt32 float64
+	WeeklyPcnt33 float64
+	WeeklyPcnt34 float64
+	WeeklyPcnt35 float64
+	WeeklyPcnt36 float64
+	WeeklyPcnt37 float64
+	WeeklyPcnt38 float64
+	WeeklyPcnt39 float64
+	WeeklyPcnt40 float64
+	WeeklyPcnt41 float64
+	WeeklyPcnt42 float64
+	WeeklyPcnt43 float64
+	WeeklyPcnt44 float64
+	WeeklyPcnt45 float64
+	WeeklyPcnt46 float64
+	WeeklyPcnt47 float64
+	WeeklyPcnt48 float64
+	WeeklyPcnt49 float64
+	WeeklyPcnt50 float64
+	WeeklyPcnt51 float64
+	WeeklyPcnt52 float64
 }
 
 type ForecastBaseline struct {
@@ -144,7 +145,7 @@ type ForecastBaseline struct {
 	Days         int
 	StartDate    time.Time
 	EndDate      time.Time
-	Quantity     float32
-	Sold         float32
+	Quantity     float64
+	Sold         float64
 	SellingPrice sql.NullFloat64
 }

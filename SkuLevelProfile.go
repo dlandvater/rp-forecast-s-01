@@ -5,12 +5,12 @@ import "fmt"
 //Calculate weekly percentages for fast-moving items
 
 // Replace abnormal demands and promotion weeks with substitute values based on the year's demand and the profile weekly percentages
-func calculateSkuProfile(Demand []float32) []float32 {
+func calculateSkuProfile(Demand []float64) []float64 {
 
-	var SkuWeeklyPcnt = make([]float32, 52)
-	var SkuWeeklyTotals = make([]float32, 52)
-	var weightedWeeklyTotals float32
-	var pcntTotals float32
+	var SkuWeeklyPcnt = make([]float64, 52)
+	var SkuWeeklyTotals = make([]float64, 52)
+	var weightedWeeklyTotals float64
+	var pcntTotals float64
 
 	//three years ago
 	SkuWeeklyTotals = accumulate(0, ConfigP.SkuProfileWeightM3, Demand, SkuWeeklyTotals)
@@ -47,7 +47,7 @@ func calculateSkuProfile(Demand []float32) []float32 {
 }
 
 // Multiply the demands by the weight for each year
-func accumulate(incr int, weight float32, Demand []float32, SkuWeeklyTotals []float32) []float32 {
+func accumulate(incr int, weight float64, Demand []float64, SkuWeeklyTotals []float64) []float64 {
 
 	for i := 0; i < 52; i++ {
 		SkuWeeklyTotals[i] = Demand[i+incr] * weight
@@ -57,9 +57,9 @@ func accumulate(incr int, weight float32, Demand []float32, SkuWeeklyTotals []fl
 }
 
 // Smooth the profile using smoothing weights for the week, the week before & after, and two weeks before & after
-func smooth(ConfigInfo *Config, SkuWeeklyTotals []float32) []float32 {
+func smooth(ConfigInfo *Config, SkuWeeklyTotals []float64) []float64 {
 
-	var SkuWeeklyTotalsSmooth = make([]float32, 52)
+	var SkuWeeklyTotalsSmooth = make([]float64, 52)
 
 	//Normalize weights
 	var totalSmoothWeights = ConfigInfo.SmoothWk0Pcnt + 2*ConfigInfo.SmoothWk1Pcnt + 2*ConfigInfo.SmoothWk2Pcnt

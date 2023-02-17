@@ -27,7 +27,7 @@ type UserRow struct {
 }
 
 type ConfigRow struct {
-	RowId     uint64
+	RowId     string
 	OrgId     string
 	Name      string
 	LabelText string
@@ -58,21 +58,21 @@ type Config struct {
 	TrendYearThreshold                  int
 	TrendHalfYearThreshold              int
 	TrendQuarterThreshold               int
-	TrendExceptionThresholdPcnt         float32
-	TrendLimitPcnt                      float32
-	AbnormalDemandFactor1               float32
+	TrendExceptionThresholdPcnt         float64
+	TrendLimitPcnt                      float64
+	AbnormalDemandFactor1               float64
 	AbnormalDemandFactor2               float64
-	AbnormalDemandMin                   float32
-	SkuProfileWeightM3                  float32
-	SkuProfileWeightM2                  float32
-	SkuProfileWeightM1                  float32
-	ForecastInMonth                     float32
-	ForecastInQuarter                   float32
-	ForecastInHalf                      float32
-	CalcWklyPcntBySKU                   float32
-	SmoothWk0Pcnt                       float32
-	SmoothWk1Pcnt                       float32
-	SmoothWk2Pcnt                       float32
+	AbnormalDemandMin                   float64
+	SkuProfileWeightM3                  float64
+	SkuProfileWeightM2                  float64
+	SkuProfileWeightM1                  float64
+	ForecastInMonth                     float64
+	ForecastInQuarter                   float64
+	ForecastInHalf                      float64
+	CalcWklyPcntBySKU                   float64
+	SmoothWk0Pcnt                       float64
+	SmoothWk1Pcnt                       float64
+	SmoothWk2Pcnt                       float64
 	NotSelectableLevelLocationHierarchy int
 	NotSelectableLevelItemHierarchy     int
 	PastDaysFcst                        int
@@ -91,9 +91,9 @@ type Exception struct {
 	ExceptionDate1 time.Time
 	ExceptionDate2 time.Time
 	ExceptionDate3 time.Time
-	ExceptionQty1  float32
-	ExceptionQty2  float32
-	ExceptionQty3  float32
+	ExceptionQty1  float64
+	ExceptionQty2  float64
+	ExceptionQty3  float64
 	DeleteCode     string
 }
 
@@ -115,7 +115,7 @@ func createRowId(orgId string, tableName string) string {
 		typ = "04"
 	case "queue_on_hand_on_order":
 		typ = "05"
-	case "exception_messages":
+	case "exceptions":
 		typ = "06"
 	case "forecast":
 		typ = "07"
@@ -167,7 +167,7 @@ func insertErrorLog(orgId string, itemId string, locationId string, err error, s
 	}
 	_, err = dataClient.Apply(ctx, m)
 	if err != nil {
-		log.Printf("write error log rp-queue-throttle", err)
+		log.Printf("write error log rp-forecast", err)
 	}
 }
 
@@ -183,18 +183,16 @@ func insertBatchLog(orgId string, bMsg string) {
 		spanner.InsertOrUpdate("error_log", sCol, []interface{}{rowId, orgId, time.Now(), bMsg}),
 	}
 	_, err := dataClient.Apply(ctx, m)
-	log.Printf("write batch log rp-queue-throttle", err)
+	log.Printf("write batch log rp-forecast", err)
 }
 
-func queryConfigurationRows(OrgId string) []ConfigRow {
+func queryConfigurationRows(orgId string) []ConfigRow {
 
 	var configRows []ConfigRow
 	var counter int
 
-	sSQL := "SELECT row_id, org_id, name, label_text, value, data_typ, min_value, max_value " +
-		"FROM config " +
-		"WHERE org_id = ? " +
-		"ORDER BY name ;"
+	sSQL := fmt.Sprintf(`SELECT row_id, org_id, name, label_text, value, data_typ, min_value, max_value 
+		FROM config WHERE org_id = '%s' ORDER BY name ;`, orgId)
 
 	stmt := spanner.Statement{SQL: sSQL}
 	iter := dataClient.Single().Query(ctx, stmt)
@@ -246,7 +244,7 @@ func insertException(exception Exception) {
 }
 
 // Update or insert a financial planning row
-func updateInsertFinancialPlanningRow(fplanType string, weeklyQty []float32, skuP *SKU) {
+func updateInsertFinancialPlanningRow(fplanType string, weeklyQty []float64, skuP *SKU) {
 
 	var rowId string
 
@@ -254,7 +252,8 @@ func updateInsertFinancialPlanningRow(fplanType string, weeklyQty []float32, sku
 	different for an update when compared to the initial insert. So, the result would be duplicate rows. */
 
 	// Section 1: get the rowId if a row already exists.
-	sSQL := fmt.Sprintf(`SELECT row_id FROM financial_planning WHERE org_id = ? AND item_id = ? AND location_id = ? AND type = ? `,
+	sSQL := fmt.Sprintf(`SELECT row_id FROM financial_planning WHERE org_id = '%s' AND item_id = '%s' 
+        AND location_id = '%s' AND type = '%s' `,
 		skuP.OrgId, skuP.ItemId, skuP.LocationId, fplanType)
 
 	stmt := spanner.Statement{SQL: sSQL}
@@ -289,7 +288,7 @@ func updateInsertFinancialPlanningRow(fplanType string, weeklyQty []float32, sku
 		"WEEK_50", "WEEK_51", "WEEK_52"}
 
 	m := []*spanner.Mutation{
-		spanner.InsertOrUpdate("error_log", sCol, []interface{}{rowId, skuP.OrgId, skuP.ItemId, skuP.LocationId,
+		spanner.InsertOrUpdate("financial_planning", sCol, []interface{}{rowId, skuP.OrgId, skuP.ItemId, skuP.LocationId,
 			fplanType, weeklyQty[0], weeklyQty[1], weeklyQty[2], weeklyQty[3], weeklyQty[4], weeklyQty[5], weeklyQty[6],
 			weeklyQty[7], weeklyQty[8], weeklyQty[9], weeklyQty[10], weeklyQty[11], weeklyQty[12], weeklyQty[13],
 			weeklyQty[14], weeklyQty[15], weeklyQty[16], weeklyQty[17], weeklyQty[18], weeklyQty[19], weeklyQty[20],
@@ -366,23 +365,61 @@ func queryUserRows() []UserRow {
 }
 
 // Delete exceptions for a SKU
+// func deleteSkuExceptions(exception_list string, skuP *SKU) {
+//
+//		//Not using mutation delete - don't have row IDs, may want to revise this at some point
+//		_, err := dataClient.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
+//			stmt := spanner.Statement{
+//				SQL: fmt.Sprintf(`DELETE FROM exceptions WHERE "+
+//					"org_id = '%s' AND item_id = '%s' AND location_id = '%s' AND exception_no IN %s `,
+//					skuP.OrgId, skuP.ItemId, skuP.LocationId, exception_list),
+//			}
+//			_, err := txn.Update(ctx, stmt)
+//			if err != nil {
+//				insertErrorLog(skuP.OrgId, skuP.ItemId, skuP.LocationId, err, 1)
+//			}
+//			return nil
+//		})
+//		if err != nil {
+//			insertErrorLog(skuP.OrgId, skuP.ItemId, skuP.LocationId, err, 1)
+//		}
+//	}
 func deleteSkuExceptions(exception_list string, skuP *SKU) {
 
-	//Not using mutation delete - don't have row IDs, may want to revise this at some point
 	_, err := dataClient.ReadWriteTransaction(ctx, func(ctx context.Context, txn *spanner.ReadWriteTransaction) error {
 		stmt := spanner.Statement{
-			SQL: fmt.Sprintf("DELETE FROM exceptions WHERE "+
-				"org_id = ? AND item_id = ? AND location_id = ? AND exception_no IN %s ", exception_list),
+			SQL: fmt.Sprintf(`DELETE FROM exceptions WHERE 
+				org_id = '%s' AND item_id = '%s' AND location_id = '%s' AND exception_no IN %s `,
+				skuP.OrgId, skuP.ItemId, skuP.LocationId, exception_list),
 		}
-		_, err := txn.Update(ctx, stmt)
-		if err != nil {
-			insertErrorLog(skuP.OrgId, skuP.ItemId, skuP.LocationId, err, 1)
+		iter := txn.Query(ctx, stmt)
+		defer iter.Stop()
+		for {
+			row, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return err
+			}
+			var (
+				orgId      string
+				itemId     string
+				locationId string
+			)
+			if err := row.Columns(&orgId, &itemId, &locationId); err != nil {
+				insertErrorLog(skuP.OrgId, skuP.ItemId, skuP.LocationId, err, 1)
+				return err
+			}
+			fmt.Println("%s %s %s\n", orgId, itemId, locationId)
 		}
+		fmt.Println("%d record(s) deleted.\n", iter.RowCount)
 		return nil
 	})
 	if err != nil {
 		insertErrorLog(skuP.OrgId, skuP.ItemId, skuP.LocationId, err, 1)
 	}
+	return
 }
 
 //End of common section

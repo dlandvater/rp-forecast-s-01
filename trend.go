@@ -1,18 +1,18 @@
 package main
 
 // Calculate trend based on comparable weeks from prior years
-func calculateTrend(skuP *SKU, priorYearsDemand []float32, Demand []float32) float32 {
+func calculateTrend(skuP *SKU, priorYearsDemand []float64, Demand []float64) float64 {
 
-	var Trend float32
+	var Trend float64
 	var endingIndex int
 	var span int
 
 	//Spans based on annual forecast and thresholds from configuration
-	if priorYearsDemand[2] < float32(ConfigP.TrendYearThreshold) {
+	if priorYearsDemand[2] < float64(ConfigP.TrendYearThreshold) {
 		span = 52
-	} else if priorYearsDemand[2] < float32(ConfigP.TrendHalfYearThreshold) {
+	} else if priorYearsDemand[2] < float64(ConfigP.TrendHalfYearThreshold) {
 		span = 26
-	} else if priorYearsDemand[2] < float32(ConfigP.TrendQuarterThreshold) {
+	} else if priorYearsDemand[2] < float64(ConfigP.TrendQuarterThreshold) {
 		span = 12
 	} else {
 		span = 12
@@ -39,7 +39,7 @@ func calculateTrend(skuP *SKU, priorYearsDemand []float32, Demand []float32) flo
 	//math.Abs requires float64
 	//	var Trend64 = float64(Trend)
 	//	var absTrend64 = math.Abs(Trend64)
-	//	var absTrend32 = float32(absTrend64)
+	//	var absTrend32 = float64(absTrend64)
 
 	var absTrend = Trend
 	if absTrend < 0 {
@@ -49,7 +49,7 @@ func calculateTrend(skuP *SKU, priorYearsDemand []float32, Demand []float32) flo
 	if absTrend > ConfigP.TrendLimitPcnt {
 		//Write trend limited exception
 		var ex Exception
-		ex.RowId = createRowId(skuP.OrgId, "exception_messages")
+		ex.RowId = createRowId(skuP.OrgId, "exceptions")
 		ex.OrgId = skuP.OrgId
 		ex.ExceptionNo = 23
 		ex.ItemId = skuP.ItemId
@@ -68,7 +68,7 @@ func calculateTrend(skuP *SKU, priorYearsDemand []float32, Demand []float32) flo
 	} else if absTrend > ConfigP.TrendExceptionThresholdPcnt {
 		//Write trend tolerance exception
 		var ex Exception
-		ex.RowId = createRowId(ConfigP.OrgId, "exception_messages")
+		ex.RowId = createRowId(ConfigP.OrgId, "exception")
 		ex.OrgId = ConfigP.OrgId
 		ex.ExceptionNo = 24
 		ex.ItemId = skuP.ItemId
@@ -83,9 +83,9 @@ func calculateTrend(skuP *SKU, priorYearsDemand []float32, Demand []float32) flo
 }
 
 // General purpose replacement for any year
-func comparableQty(endingIndex int, span int, Demand []float32) float32 {
+func comparableQty(endingIndex int, span int, Demand []float64) float64 {
 	//Get a total for the year
-	var comparisonQty float32
+	var comparisonQty float64
 
 	//Accumulate selected elements
 	for i := endingIndex - span; i <= endingIndex; i++ {

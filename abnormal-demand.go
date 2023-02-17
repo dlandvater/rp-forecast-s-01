@@ -5,10 +5,10 @@ import (
 )
 
 // Replace abnormal demands and promotion weeks with substitute values based on the year's demand and the profile weekly percentages
-func replaceAbnormalDemand(skuP *SKU, ProfileInfo *Profile, Sales []float32, Demand []float32, Symbol []string) ([]float32, []float32) {
+func replaceAbnormalDemand(skuP *SKU, ProfileInfo *Profile, Sales []float64, Demand []float64, Symbol []string) ([]float64, []float64) {
 
 	//elements: 0 = minus 3 year, 1 = minus 2 year, 2 = last year
-	var priorYearsDemand = make([]float32, 3, 3)
+	var priorYearsDemand = make([]float64, 3, 3)
 
 	//three years ago
 	priorYearsDemand[0] = replace(0, skuP, ProfileInfo, Demand, Symbol)
@@ -23,20 +23,20 @@ func replaceAbnormalDemand(skuP *SKU, ProfileInfo *Profile, Sales []float32, Dem
 }
 
 // General purpose replacement of abnormal or promotion demands useful for any year
-func replace(incr int, skuP *SKU, ProfileInfo *Profile, Demand []float32, Symbol []string) float32 {
+func replace(incr int, skuP *SKU, ProfileInfo *Profile, Demand []float64, Symbol []string) float64 {
 
 	//Get a total for the year
-	var totalDemand float32
-	var differenceRatio float32
+	var totalDemand float64
+	var differenceRatio float64
 	var inverseFcst float64
 	var inverseFcstPwr float64
-	var abnormalDemandThreshold float32
-	var totalPcnt float32
-	var adjTotalDemand float32
-	var substituteDemand float32
-	var difference float32
+	var abnormalDemandThreshold float64
+	var totalPcnt float64
+	var adjTotalDemand float64
+	var substituteDemand float64
+	var difference float64
 	//Use shifted profile percentages since the demand slice starts with the current date
-	var profilePcnt []float32
+	var profilePcnt []float64
 	profilePcnt = ProfileInfo.ShiftedWeeklyPcnt
 
 	//Total demand for the year
@@ -75,7 +75,7 @@ func replace(incr int, skuP *SKU, ProfileInfo *Profile, Demand []float32, Symbol
 		if substituteDemand > 0 && difference > 0 {
 			inverseFcst = (1 / float64(substituteDemand))
 			inverseFcstPwr = math.Pow(inverseFcst, ConfigP.AbnormalDemandFactor2)
-			abnormalDemandThreshold = (float32(inverseFcstPwr) * ConfigP.AbnormalDemandFactor1) + ConfigP.AbnormalDemandMin
+			abnormalDemandThreshold = (float64(inverseFcstPwr) * ConfigP.AbnormalDemandFactor1) + ConfigP.AbnormalDemandMin
 		} else {
 			//Has the effect of resetting the difference ratio where there is no difference.
 			abnormalDemandThreshold = 0

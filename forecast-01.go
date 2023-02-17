@@ -32,7 +32,7 @@ func main() {
 
 	token = mustGetenv("PUBSUB_VERIFICATION_TOKEN") // token is used to verify push requests.
 
-	ctx := context.Background()
+	ctx = context.Background()
 
 	client, err := pubsub.NewClient(ctx, mustGetenv("GOOGLE_CLOUD_PROJECT"))
 	if err != nil {
@@ -70,24 +70,27 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 	var NetChgSupply string
 
 	/* for local testing:
-	1. create json such as: [{"OrgId":"1","ItemId":"110054","LocationId":"12"},{"OrgId":"1","ItemId":"1290358","LocationId":"10"}]
-	2. encode base 64 using https://www.base64encode.net/ or similar to give: W3siT3JnSWQiOiIxIiwiSXRlbUlkIjoiMTEwMDU0IiwiTG9jYXRpb25JZCI6IjE1In0seyJPcmdJZCI6IjEiLCJJdGVtSWQiOiIxMTAwNTQiLCJMb2NhdGlvbklkIjoiMTYifV0=
+	1. create json such as: [{"OrgId":"1","ItemId":"2920667","LocationId":"12"},{"OrgId":"1","ItemId":"2920667","LocationId":"10"}]
+	2. encode base 64 using https://www.base64encode.net/ or similar to give: W3siT3JnSWQiOiIxIiwiSXRlbUlkIjoiMjkyMDY2NyIsIkxvY2F0aW9uSWQiOiIxMiJ9LHsiT3JnSWQiOiIxIiwiSXRlbUlkIjoiMjkyMDY2NyIsIkxvY2F0aW9uSWQiOiIxMCJ9XQ==
 	3. put this in the body using Postman or similar:
 	{
 	    "message": {
-	        "data": "W3siT3JnSWQiOiIxIiwiSXRlbUlkIjoiMTEwMDU0IiwiTG9jYXRpb25JZCI6IjE1In0seyJPcmdJZCI6IjEiLCJJdGVtSWQiOiIxMTAwNTQiLCJMb2NhdGlvbklkIjoiMTYifV0="
+	        "data": "W3siT3JnSWQiOiIxIiwiSXRlbUlkIjoiMjkyMDY2NyIsIkxvY2F0aW9uSWQiOiIxMiJ9LHsiT3JnSWQiOiIxIiwiSXRlbUlkIjoiMjkyMDY2NyIsIkxvY2F0aW9uSWQiOiIxMCJ9XQ=="
 	    }
 	}
 	4. add parameters: token <token value>>
 	5. use localhost:<debugging port> for url
 	*/
+
+	ctx = context.Background()
+
 	//Extract the trigger list from the pub sub push message
 	triggersForecast := retrieveTriggers(w, r)
 
 	// Client
 	//dataClient, err = spanner.NewClient(ctx, "projects/rp-database-s-01/instances/rp-combined/databases/retail")
 	// Emulator client
-	dataClient, err = spanner.NewClient(ctx, "projects/rp-database-s-01/instances/rp-combined/databases/retail")
+	dataClient, err = spanner.NewClient(ctx, "projects/rp-forecast-s-01/instances/rp-combined/databases/retail")
 	if err != nil {
 		log.Println("new spanner client error", err)
 		insertErrorLog("0", "", "", err, 1)
@@ -130,9 +133,9 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 			CategoryP = queryOneCategory(SkuP)
 
 			//Profile - SKU level overrides the category profile
-			if SkuP.ProfileId.Valid == false ||
-				(SkuP.ProfileId.Valid == true && SkuP.ProfileId.String == "") {
-				SkuP.setProfileValue(CategoryP.ProfileId)
+			if SkuP.ProfileId.Valid == false {
+				SkuP.ProfileId.Valid = true
+				SkuP.ProfileId.StringVal = CategoryP.ProfileId
 			}
 			ProfileP, _ = getProfile(SkuP)
 
@@ -147,7 +150,7 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 
 			var Sales, Demand, Symbol = bucketSalesHistory(SkuP, SalesHistoryRowsP)
 
-			var priorYearsDemand []float32 //elements: 0 = minus 3 year, 1 = minus 2 year, 2 = last year
+			var priorYearsDemand []float64 //elements: 0 = minus 3 year, 1 = minus 2 year, 2 = last year
 			priorYearsDemand, Demand = replaceAbnormalDemand(SkuP, ProfileP, Sales, Demand, Symbol)
 
 			//Calculate trend, check for override
@@ -165,7 +168,7 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 					ex.CreateDate = ConfigP.CurrentDate
 					insertException(ex)
 				} else {
-					SkuP.Trend = float32(SkuP.TrendOverride.Float64)
+					SkuP.Trend = float64(SkuP.TrendOverride.Float64)
 				}
 			} else {
 				SkuP.Trend = calculateTrend(SkuP, priorYearsDemand, Demand)
@@ -175,7 +178,7 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 			if SkuP.AnnualForecastOverride.Valid {
 				if SkuP.AnnualForecastOverride.Float64 < 0 || SkuP.AnnualForecastOverride.Float64 > 999999999 {
 					//Ignore override annual forecast.
-					SkuP.AnnualForecast = (float32(1.0) + SkuP.Trend) * priorYearsDemand[2]
+					SkuP.AnnualForecast = (float64(1.0) + SkuP.Trend) * priorYearsDemand[2]
 					//Write exception for invalid annual forecast override
 					var ex Exception
 					ex.OrgId = ConfigP.OrgId
@@ -186,14 +189,14 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 					ex.CreateDate = ConfigP.CurrentDate
 					insertException(ex)
 				} else {
-					SkuP.AnnualForecast = float32(SkuP.AnnualForecastOverride.Float64)
+					SkuP.AnnualForecast = float64(SkuP.AnnualForecastOverride.Float64)
 				}
 			} else {
-				SkuP.AnnualForecast = (float32(1.0) + SkuP.Trend) * priorYearsDemand[2]
+				SkuP.AnnualForecast = (float64(1.0) + SkuP.Trend) * priorYearsDemand[2]
 			}
 
 			//Calculate weekly percentages for SKUs above a threshold
-			var SkuWeeklyPcnt []float32
+			var SkuWeeklyPcnt []float64
 
 			if SkuP.AnnualForecast > ConfigP.CalcWklyPcntBySKU {
 				//Replace profile shifted percentages
@@ -205,7 +208,7 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			//Calculate weekly forecasts
-			var ForecastBase []float32 = calcWeeklyForecasts(SkuP.AnnualForecast, SkuWeeklyPcnt)
+			var ForecastBase []float64 = calcWeeklyForecasts(SkuP.AnnualForecast, SkuWeeklyPcnt)
 
 			//Calculate weekly forecasts, accumulate into monthly, quarterly, or half-year forecasts
 			// and update the database
@@ -263,11 +266,6 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 
 	//ack
 	w.WriteHeader(204)
-}
-
-func (s *SKU) setProfileValue(categoryProfileValue string) {
-	s.ProfileId.Valid = true
-	s.ProfileId.String = categoryProfileValue
 }
 
 //Start of common section

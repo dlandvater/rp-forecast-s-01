@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func (ConfP *Config) getConfig(OrgId string) {
+func (ConfP *Config) getConfig(orgId string) {
 
 	//Start of common section
 
@@ -32,8 +32,9 @@ func (ConfP *Config) getConfig(OrgId string) {
 	}
 	ConfP.EmptyDate = ed
 
-	configRows := queryConfigurationRows(OrgId)
+	configRows := queryConfigurationRows(orgId)
 
+	ConfP.OrgId = orgId
 	for i := 0; i < len(configRows); i++ {
 		if configRows[i].Name == "Organization" {
 			ConfP.OrgId = configRows[i].Value
@@ -200,28 +201,28 @@ func (ConfP *Config) getConfig(OrgId string) {
 			if err != nil {
 				ConfP.ForecastInMonth = 52.0 //default
 			} else {
-				ConfP.ForecastInMonth = float32(f)
+				ConfP.ForecastInMonth = float64(f)
 			}
 		} else if configRows[i].Name == "ForecastInQuarter" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.ForecastInQuarter = 24 //default
 			} else {
-				ConfP.ForecastInQuarter = float32(f)
+				ConfP.ForecastInQuarter = float64(f)
 			}
 		} else if configRows[i].Name == "ForecastInHalf" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.ForecastInHalf = 6.0 //default
 			} else {
-				ConfP.ForecastInHalf = float32(f)
+				ConfP.ForecastInHalf = float64(f)
 			}
 		} else if configRows[i].Name == "CalcWklyPcntBySKU" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.CalcWklyPcntBySKU = 70.0 //default
 			} else {
-				ConfP.CalcWklyPcntBySKU = float32(f)
+				ConfP.CalcWklyPcntBySKU = float64(f)
 			}
 		} else if configRows[i].Name == "TrendYearThreshold" {
 			ConfP.TrendYearThreshold, err = strconv.Atoi(configRows[i].Value)
@@ -243,63 +244,63 @@ func (ConfP *Config) getConfig(OrgId string) {
 			if err != nil {
 				ConfP.SkuProfileWeightM1 = 1.0 //default
 			} else {
-				ConfP.SkuProfileWeightM1 = float32(f)
+				ConfP.SkuProfileWeightM1 = float64(f)
 			}
 		} else if configRows[i].Name == "SkuProfileWeightM2" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.SkuProfileWeightM2 = 0.5 //default
 			} else {
-				ConfP.SkuProfileWeightM2 = float32(f)
+				ConfP.SkuProfileWeightM2 = float64(f)
 			}
 		} else if configRows[i].Name == "SkuProfileWeightM3" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.SkuProfileWeightM3 = 0.25 //default
 			} else {
-				ConfP.SkuProfileWeightM3 = float32(f)
+				ConfP.SkuProfileWeightM3 = float64(f)
 			}
 		} else if configRows[i].Name == "SmoothWk0Pcnt" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.SmoothWk0Pcnt = 1.0 //default
 			} else {
-				ConfP.SmoothWk0Pcnt = float32(f)
+				ConfP.SmoothWk0Pcnt = float64(f)
 			}
 		} else if configRows[i].Name == "SmoothWk1Pcnt" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.SmoothWk1Pcnt = 0.5 //default
 			} else {
-				ConfP.SmoothWk1Pcnt = float32(f)
+				ConfP.SmoothWk1Pcnt = float64(f)
 			}
 		} else if configRows[i].Name == "SmoothWk2Pcnt" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.SmoothWk2Pcnt = 0.25 //default
 			} else {
-				ConfP.SmoothWk2Pcnt = float32(f)
+				ConfP.SmoothWk2Pcnt = float64(f)
 			}
 		} else if configRows[i].Name == "TrendLimitPcnt" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.TrendLimitPcnt = 0.25 //default
 			} else {
-				ConfP.TrendLimitPcnt = float32(f)
+				ConfP.TrendLimitPcnt = float64(f)
 			}
 		} else if configRows[i].Name == "TrendExceptionThresholdPcnt" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.TrendExceptionThresholdPcnt = 0.20 //default
 			} else {
-				ConfP.TrendExceptionThresholdPcnt = float32(f)
+				ConfP.TrendExceptionThresholdPcnt = float64(f)
 			}
 		} else if configRows[i].Name == "AbnormalDemandFactor1" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
 			if err != nil {
 				ConfP.AbnormalDemandFactor1 = 12.0 //default
 			} else {
-				ConfP.AbnormalDemandFactor1 = float32(f)
+				ConfP.AbnormalDemandFactor1 = float64(f)
 			}
 		} else if configRows[i].Name == "AbnormalDemandFactor2" {
 			f, err = strconv.ParseFloat(configRows[i].Value, 64)
@@ -313,7 +314,7 @@ func (ConfP *Config) getConfig(OrgId string) {
 			if err != nil {
 				ConfP.AbnormalDemandMin = 0.50 //default
 			} else {
-				ConfP.AbnormalDemandMin = float32(f)
+				ConfP.AbnormalDemandMin = float64(f)
 			}
 		}
 	}

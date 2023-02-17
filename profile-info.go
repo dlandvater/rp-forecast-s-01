@@ -11,7 +11,7 @@ func getProfile(skuP *SKU) (*Profile, error) {
 	ProfileInfo = queryOneProfile(skuP)
 
 	//Normalize if needed
-	var ttl float32
+	var ttl float64
 	for i := 0; i < len(ProfileInfo.ShiftedWeeklyPcnt); i++ {
 		ttl = ttl + ProfileInfo.ShiftedWeeklyPcnt[i]
 	}
@@ -28,9 +28,9 @@ func getProfile(skuP *SKU) (*Profile, error) {
 // Shift profile percentages to the current week
 // For example, profile percentages start at week 1 and extend to week 52
 // If the current date is week 10, then create a new slice of profile percentages starting at 10
-func shift(offset int, weeklyPcnt []float32) []float32 {
+func shift(offset int, weeklyPcnt []float64) []float64 {
 
-	var ShiftedWeeklyPcnt = make([]float32, 52)
+	var ShiftedWeeklyPcnt = make([]float64, 52)
 	var j int
 
 	for i := 0; i < 52; i++ {
