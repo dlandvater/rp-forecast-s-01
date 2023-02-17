@@ -306,7 +306,7 @@ func queryOneCategory(skuP *SKU) *Category {
 }
 
 // Update an existing forecast row
-func updateFcstRow(rowId string, skuP *SKU, baseFcstType string, days int,
+func updateFcstRow(rowId string, skuP *SKU, baseFcstType string, days int64,
 	startDate time.Time, endDate time.Time, quantity float64, sold float64, sellingPrice sql.NullFloat64) {
 
 	sCol := []string{"row_id", "days", "start_date", "end_date", "quantity"}
@@ -321,7 +321,7 @@ func updateFcstRow(rowId string, skuP *SKU, baseFcstType string, days int,
 }
 
 // Insert a new forecast row
-func insertFcstRow(skuP *SKU, baseFcstType string, days int,
+func insertFcstRow(skuP *SKU, baseFcstType string, days int64,
 	startDate time.Time, endDate time.Time, quantity float64, sold float64, sellingPrice sql.NullFloat64) string {
 
 	sCol := []string{"row_id", "org_id", "item_id", "location_id", "type", "days", "start_date", "end_date", "quantity", "sold",

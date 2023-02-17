@@ -127,8 +127,12 @@ func createRowId(orgId string, tableName string) string {
 		typ = "0"
 	}
 	//	rowId := createRowId(orgId, "error_log")
-	// Create unique row ID using first 14 digits of nano time reversed + orgId + type of table
+	// Create unique row ID using first 14 digits of time reversed + orgId + type of table
 	time.Sleep(time.Nanosecond)
+	//TODO alternate approach - eliminates the problem of nano number ending in 00
+	//TODO change since micro is 3 digits shorter
+	//time.Sleep(time.Microsecond)
+	//timestamp2 := strconv.FormatInt(time.Now().UTC().UnixMicro(), 10)
 	n = time.Now().UnixNano()
 	s := strconv.FormatInt(n, 10) // Nano time to string
 	r := StringReverse(s)         // Reverse time to prevent database hot spots

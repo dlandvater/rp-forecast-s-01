@@ -88,9 +88,9 @@ func pushHandler(w http.ResponseWriter, r *http.Request) {
 	triggersForecast := retrieveTriggers(w, r)
 
 	// Client
-	//dataClient, err = spanner.NewClient(ctx, "projects/rp-database-s-01/instances/rp-combined/databases/retail")
+	dataClient, err = spanner.NewClient(ctx, "projects/rp-database-s-01/instances/rp-combined/databases/retail")
 	// Emulator client
-	dataClient, err = spanner.NewClient(ctx, "projects/rp-forecast-s-01/instances/rp-combined/databases/retail")
+	//dataClient, err = spanner.NewClient(ctx, "projects/rp-forecast-s-01/instances/rp-combined/databases/retail")
 	if err != nil {
 		log.Println("new spanner client error", err)
 		insertErrorLog("0", "", "", err, 1)

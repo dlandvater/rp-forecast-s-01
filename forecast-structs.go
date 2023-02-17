@@ -142,7 +142,7 @@ type ForecastBaseline struct {
 	ItemId       string
 	LocationId   string
 	Type         string //B
-	Days         int
+	Days         int64
 	StartDate    time.Time
 	EndDate      time.Time
 	Quantity     float64

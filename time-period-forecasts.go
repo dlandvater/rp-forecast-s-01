@@ -13,13 +13,13 @@ var nextRowId uint64 = 1000
 func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline, SkuP *SKU) {
 	var WeeklyFutureDates = ConfigP.WeeklyFutureDates
 	var baseFcstType string = "B"
-	var days int
-	var weeks int
+	var days int64
+	var weeks int64
 	var sold float64 = 0
-	var nextWklyFcst int = 0
+	var nextWklyFcst int64 = 0
 	var fcstRowQty float64 = 0
 	var update bool
-	var span int
+	var span int64
 	var startDate time.Time
 	var endDate time.Time
 
@@ -76,7 +76,7 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 			//End date of the forecast should be the start date + days - one day
 			span = days - 1
 			startDate = WeeklyFutureDates[0]
-			endDate = startDate.AddDate(0, 0, span)
+			endDate = startDate.AddDate(0, 0, int(span))
 
 			//TODO remove
 			//		fmt.Println(startDate, endDate, span)
@@ -107,7 +107,7 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 			//End date of the forecast should be the start date + days - one day
 			span = days - 1
 			startDate = WeeklyFutureDates[0]
-			endDate = startDate.AddDate(0, 0, span)
+			endDate = startDate.AddDate(0, 0, int(span))
 
 			//TODO remove
 			//		fmt.Println(startDate, endDate, span)
@@ -149,7 +149,7 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 
 					//End date of the forecast is the end of the weekly forecast array, days will vary
 					endDate = WeeklyFutureDates[51].AddDate(0, 0, 6)
-					span = int(endDate.Sub(startDate).Hours() / 24)
+					span = int64(endDate.Sub(startDate).Hours() / 24)
 
 					//TODO remove
 					//fmt.Println(startDate, endDate, span)
@@ -166,8 +166,8 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 				} else {
 
 					//End date of the forecast is the start date + days - one day
-					span = int(days - 1)
-					endDate = startDate.AddDate(0, 0, span)
+					span = int64(days - 1)
+					endDate = startDate.AddDate(0, 0, int(span))
 
 					//TODO remove
 					//fmt.Println(startDate, endDate, span)
@@ -202,7 +202,7 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 			//End date of the forecast is the end of the weekly forecast array, days will vary
 			endDate = WeeklyFutureDates[51].AddDate(0, 0, 6)
 			//Conform to other forecasts (multiples of 7 days)
-			span = int(endDate.Sub(startDate).Hours()/24) + 1
+			span = int64(endDate.Sub(startDate).Hours()/24) + 1
 
 			//TODO remove
 			//fmt.Println(startDate, endDate, span)
@@ -217,8 +217,8 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 		} else {
 
 			//End date of the forecast is the start date + days - one day
-			span = int(days - 1)
-			endDate = startDate.AddDate(0, 0, span)
+			span = int64(days - 1)
+			endDate = startDate.AddDate(0, 0, int(span))
 
 			//TODO remove
 			//fmt.Println(startDate, endDate, span)
@@ -237,14 +237,14 @@ func forecastTimePeriod(ForecastBase []float64, ForecastRows []ForecastBaseline,
 }
 
 // Skip to next forecast start date
-func skip(WeeklyFutureDates []time.Time, forecastEndDate time.Time) int {
+func skip(WeeklyFutureDates []time.Time, forecastEndDate time.Time) int64 {
 
-	var nextElement int
+	var nextElement int64
 
 	//Find the first weekly forecast element after the forecast end date
 	for i := 0; i < len(WeeklyFutureDates); i++ {
 		if WeeklyFutureDates[i].After(forecastEndDate) {
-			nextElement = i
+			nextElement = int64(i)
 			break
 		}
 	}
@@ -252,7 +252,7 @@ func skip(WeeklyFutureDates []time.Time, forecastEndDate time.Time) int {
 }
 
 // Accumulate forecasts
-func acculmulate(nextWklyFcst int, weeks int, ForecastBase []float64) (int, float64) {
+func acculmulate(nextWklyFcst int64, weeks int64, ForecastBase []float64) (int64, float64) {
 
 	var accumulator float64
 
@@ -268,7 +268,7 @@ func acculmulate(nextWklyFcst int, weeks int, ForecastBase []float64) (int, floa
 }
 
 // Check differences
-func checkDifferences(startDate time.Time, endDate time.Time, days int, fcstRowQty float64, ForecastRow ForecastBaseline) bool {
+func checkDifferences(startDate time.Time, endDate time.Time, days int64, fcstRowQty float64, ForecastRow ForecastBaseline) bool {
 
 	var update bool = true //default to update forecast row
 	var daysOk bool = false
